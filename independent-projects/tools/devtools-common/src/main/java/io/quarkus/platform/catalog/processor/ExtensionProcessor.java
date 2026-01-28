@@ -111,6 +111,10 @@ public final class ExtensionProcessor {
         return new HashSet<>(getMetadataValue(extension, MD_CLI_PLUGINS).asStringList());
     }
 
+    public static List<Map<String, Object>> getIntegrates(Extension extension) {
+        return getMetadataValue(extension, MD_INTEGRATES).asListOfMaps();
+    }
+
     /**
      * List of strings to use for optimised word matching.
      * <br/>
@@ -229,6 +233,10 @@ public final class ExtensionProcessor {
 
     public Set<String> getCliPlugins() {
         return getCliPlugins(extension);
+    }
+
+    public List<Map<String, Object>> getIntegrates() {
+        return getIntegrates(extension);
     }
 
     public Map<String, Collection<String>> getSyntheticMetadata() {

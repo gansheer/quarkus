@@ -25,6 +25,7 @@ public interface Extension {
     String MD_STATUS = "status";
     String MD_BUILT_WITH_QUARKUS_CORE = "built-with-quarkus-core";
     String MD_CLI_PLUGINS = "cli-plugins";
+    String MD_INTEGRATES = "integrates";
 
     String getName();
 

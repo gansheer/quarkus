@@ -367,6 +367,7 @@ public class ExtensionDescriptorMojo extends AbstractMojo {
         addCapabilities(extObject);
         addSource(extObject);
         addExtensionDependencies(extObject);
+        processIntegratesMetadata(extObject);
 
         completeCodestartArtifact(mapper, extObject);
 
@@ -1422,6 +1423,86 @@ public class ExtensionDescriptorMojo extends AbstractMojo {
 
     private interface NodeHandler {
         void handle(Log log, int depth, Node n, List<ArtifactKey> collected);
+    }
+
+    private void processIntegratesMetadata(ObjectNode extObject) throws MojoExecutionException {
+        JsonNode metadataNode = extObject.get("metadata");
+        if (metadataNode == null || !metadataNode.has("integrates")) {
+            return;
+        }
+
+        JsonNode integratesNode = metadataNode.get("integrates");
+        if (!integratesNode.isArray()) {
+            getLog().warn("'integrates' metadata should be a list");
+            return;
+        }
+
+        ObjectMapper mapper = getMapper(true);
+        ArrayNode resolvedIntegrates = mapper.createArrayNode();
+
+        for (JsonNode item : integratesNode) {
+            if (!item.isObject()) {
+                getLog().warn("Each 'integrates' entry should be an object with 'name' field");
+                continue;
+            }
+
+            JsonNode nameNode = item.get("name");
+            if (nameNode == null || !nameNode.isTextual()) {
+                getLog().warn("Each 'integrates' entry must have a 'name' field");
+                continue;
+            }
+
+            String name = nameNode.asText();
+            ObjectNode resolvedItem = mapper.createObjectNode();
+            resolvedItem.put("name", name);
+
+            // Check if literal version is provided
+            JsonNode versionNode = item.get("version");
+            if (versionNode != null && versionNode.isTextual()) {
+                // Use literal version
+                resolvedItem.put("version", versionNode.asText());
+                resolvedIntegrates.add(resolvedItem);
+                continue;
+            }
+
+            // Otherwise, resolve version from groupId:artifactId
+            JsonNode groupIdNode = item.get("groupId");
+            JsonNode artifactIdNode = item.get("artifactId");
+
+            if (groupIdNode == null || !groupIdNode.isTextual() ||
+                    artifactIdNode == null || !artifactIdNode.isTextual()) {
+                getLog().warn(
+                        "'integrates' entry '" + name + "' must have either 'version' or both 'groupId' and 'artifactId'");
+                continue;
+            }
+
+            String groupId = groupIdNode.asText();
+            String artifactId = artifactIdNode.asText();
+
+            // Find matching dependency and resolve version
+            String resolvedVersion = null;
+            for (Artifact dep : project.getArtifacts()) {
+                if (dep.getGroupId().equals(groupId) &&
+                        dep.getArtifactId().equals(artifactId)) {
+                    resolvedVersion = dep.getVersion();
+                    break;
+                }
+            }
+
+            if (resolvedVersion == null) {
+                getLog().warn("Could not resolve version for " + groupId + ":" + artifactId +
+                        " ('" + name + "'). Ensure it's declared as a dependency.");
+                continue;
+            }
+
+            resolvedItem.put("groupId", groupId);
+            resolvedItem.put("artifactId", artifactId);
+            resolvedItem.put("version", resolvedVersion);
+            resolvedIntegrates.add(resolvedItem);
+        }
+
+        // Replace integrates with resolved version
+        ((ObjectNode) metadataNode).set("integrates", resolvedIntegrates);
     }
 
     private MavenArtifactResolver resolver() throws MojoExecutionException {

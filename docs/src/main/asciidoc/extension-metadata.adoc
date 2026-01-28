@@ -45,6 +45,10 @@ metadata:
     artifact: "io.quarkus:quarkus-project-core-extension-codestarts"
   config: <10>
   - "quarkus.rest."
+  integrates: <11>
+    - name: "Jakarta REST"
+      groupId: "jakarta.ws.rs"
+      artifactId: "jakarta.ws.rs-api"
 ----
 
 <1> Extension name displayed to users
@@ -57,6 +61,7 @@ metadata:
 <8> Link to an externally hosted image. This is used in the Quarkus dev tools as the extension icon. It should be square, and any resolution greater than 220 pixels. Supported formats are png, jpeg, tiff, webp, and svg. Alternatively, if you https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/customizing-your-repositorys-social-media-preview[set the social media preview] on the extension's source code repository, the tools will pick up that image.
 <9> https://quarkus.io/guides/extension-codestart[Codestart] information
 <10> Configuration prefix
+<11> Libraries this extension integrates with. Each entry has a human-readable name and either version resolution via groupId/artifactId or a literal version.
 
 And here is the final version of the file included in the runtime JAR augmented with other information collected by the Quarkus Maven plugin:
 
@@ -137,6 +142,35 @@ metadata:
 The meaning of support scopes, such as `supported` and `tech-preview`, would be defined in the offering documentation by the corresponding team or organization.
 
 Offerings and support scopes may be used by Quarkus dev tools, such as Quarkus CLI and code.quarkus, to display and/or filter extensions by the relevant support-related information.
+
+=== Integrated Libraries
+
+Extensions that wrap third-party libraries can expose this information using the `integrates` metadata field:
+
+[source,yaml,subs=attributes+]
+----
+metadata:
+  integrates:
+    - name: "Camel"
+      groupId: "org.apache.camel"
+      artifactId: "camel-core"
+    - name: "ActiveMQ Artemis"
+      groupId: "org.apache.activemq"
+      artifactId: "artemis-core-client"
+    - name: "Some Library"
+      version: "1.2.3"
+----
+
+The `integrates` field is a list where each entry must have:
+
+* `name` (required): A human-readable display name for the integrated library
+* Either:
+** `groupId` and `artifactId`: Maven coordinates for automatic version resolution from your extension's dependencies
+** `version`: A literal version string when automatic resolution is not desired
+
+Versions specified via `groupId` and `artifactId` are resolved from your extension's dependencies at build time and displayed in code.quarkus.io.
+
+This metadata helps users understand which underlying libraries an extension integrates with and which versions are being used.
 
 [[quarkus-extension-properties]]
 == META-INF/quarkus-extension.properties

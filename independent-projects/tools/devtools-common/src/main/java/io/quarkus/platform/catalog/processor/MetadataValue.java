@@ -93,4 +93,23 @@ public final class MetadataValue {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> asMap() {
+        if (val instanceof Map) {
+            return (Map<String, Object>) val;
+        }
+        return Collections.emptyMap();
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Map<String, Object>> asListOfMaps() {
+        if (val instanceof List) {
+            List<?> list = (List<?>) val;
+            if (!list.isEmpty() && list.get(0) instanceof Map) {
+                return (List<Map<String, Object>>) val;
+            }
+        }
+        return Collections.emptyList();
+    }
+
 }
