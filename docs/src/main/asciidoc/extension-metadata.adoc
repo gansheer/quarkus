@@ -61,7 +61,7 @@ metadata:
 <8> Link to an externally hosted image. This is used in the Quarkus dev tools as the extension icon. It should be square, and any resolution greater than 220 pixels. Supported formats are png, jpeg, tiff, webp, and svg. Alternatively, if you https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/customizing-your-repositorys-social-media-preview[set the social media preview] on the extension's source code repository, the tools will pick up that image.
 <9> https://quarkus.io/guides/extension-codestart[Codestart] information
 <10> Configuration prefix
-<11> Libraries this extension integrates with. Each entry has a human-readable name and either version resolution via groupId/artifactId or a literal version.
+<11> Libraries this extension integrates with. Each entry has a human-readable name and version information specified via `groupId`/`artifactId`, `resolveVersionFrom`, or a literal `version`.
 
 And here is the final version of the file included in the runtime JAR augmented with other information collected by the Quarkus Maven plugin:
 
@@ -157,6 +157,8 @@ metadata:
     - name: "ActiveMQ Artemis"
       groupId: "org.apache.activemq"
       artifactId: "artemis-core-client"
+    - name: "Hibernate ORM"
+      resolveVersionFrom: "org.hibernate.orm:hibernate-core"
     - name: "Some Library"
       version: "1.2.3"
 ----
@@ -164,13 +166,30 @@ metadata:
 The `integrates` field is a list where each entry must have:
 
 * `name` (required): A human-readable display name for the integrated library
-* Either:
+* Version information (one of):
 ** `groupId` and `artifactId`: Maven coordinates for automatic version resolution from your extension's dependencies
+** `resolveVersionFrom`: A `groupId:artifactId` string for version resolution from the platform BOM during descriptor generation
 ** `version`: A literal version string when automatic resolution is not desired
 
-Versions specified via `groupId` and `artifactId` are resolved from your extension's dependencies at build time and displayed in code.quarkus.io.
+==== Version Resolution
 
-This metadata helps users understand which underlying libraries an extension integrates with and which versions are being used.
+There are three ways to specify the version of an integrated library:
+
+1. **Direct dependency resolution** (`groupId` + `artifactId`): The version is resolved from your extension's direct dependencies at build time. Use this when the library is a direct dependency of your extension.
+
+2. **Platform BOM resolution** (`resolveVersionFrom`): The version is resolved from the platform BOM during platform descriptor generation. Use this when the library version is managed by the platform BOM but may not be a direct dependency of your extension. The platform BOM generator will automatically populate the `version` field based on the BOM's managed dependencies.
++
+[source,yaml,subs=attributes+]
+----
+integrates:
+  - name: "Hibernate ORM"
+    resolveVersionFrom: "org.hibernate.orm:hibernate-core"  # <1>
+----
+<1> During platform descriptor generation, this will be resolved to the version managed in the platform BOM and the `version` field will be added automatically.
+
+3. **Literal version** (`version`): Specify a fixed version string when automatic resolution is not applicable or desired.
+
+The resolved versions are displayed in https://code.quarkus.io[code.quarkus.io] and other Quarkus dev tools to help users understand which underlying library versions an extension integrates with.
 
 [[quarkus-extension-properties]]
 == META-INF/quarkus-extension.properties
