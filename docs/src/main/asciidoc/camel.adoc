@@ -6,12 +6,14 @@ https://github.com/quarkusio/quarkus/tree/main/docs/src/main/asciidoc
 = Apache Camel on Quarkus
 include::_attributes.adoc[]
 :categories: integration
-:summary: This guide covers the systems integration with Apache Camel
+:summary: Entry point for everything Apache Camel on Quarkus.
 :topics: camel,integration
 
 https://camel.apache.org/[Apache Camel] is the Swiss knife of integrating heterogeneous systems with more than a decade
 of history and a lively community of users and developers.
 
-The support for Apache Camel on top of Quarkus is provided by the
-https://github.com/apache/camel-quarkus[Apache Camel Quarkus project]. Please refer to
-https://camel.apache.org/camel-quarkus/[their documentation] for more information.
+https://camel.apache.org/camel-quarkus/[Camel Quarkus] runs Camel inside your Quarkus application as naturally as any other CDI bean: same `application.properties`, same `quarkus dev`, same native compilation support.
+With https://camel.apache.org/components/[400+ connectors], Camel covers databases, cloud services, messaging systems, SaaS APIs, and protocols from FTP to AS2.
+
+* https://camel.apache.org/camel-quarkus/user-guide/first-steps.html[First Steps] -- create a Camel Quarkus application from scratch
+* xref:camel-extend-quarkus.adoc[Extending Your Quarkus Application with Apache Camel] -- add Camel to an existing Quarkus application
